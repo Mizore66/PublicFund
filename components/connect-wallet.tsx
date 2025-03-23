@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -11,31 +11,63 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Wallet } from "lucide-react"
+import { createOrUpdateUser } from "@/actions/user-actions"
 
 interface ConnectWalletProps {
   className?: string
-  onConnect?: () => void
+  onConnect?: (walletAddress: string) => void
 }
 
 export function ConnectWallet({ className, onConnect }: ConnectWalletProps) {
   const [isConnected, setIsConnected] = useState(false)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [walletAddress, setWalletAddress] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
 
-  const handleConnect = () => {
-    // In a real app, this would connect to MetaMask or another Web3 wallet
-    // For this demo, we'll simulate a connection
-    setTimeout(() => {
+  // Check if wallet is already connected (e.g., from localStorage)
+  useEffect(() => {
+    const savedWallet = localStorage.getItem("walletAddress")
+    if (savedWallet) {
+      setWalletAddress(savedWallet)
+      setIsConnected(true)
+      if (onConnect) onConnect(savedWallet)
+    }
+  }, [onConnect])
+
+  const handleConnect = async (walletType: string) => {
+    setIsLoading(true)
+
+    try {
+      // In a real app, this would connect to MetaMask or another Web3 wallet
+      // For this demo, we'll simulate a connection
       const mockAddress =
         "0x" + Math.random().toString(16).slice(2, 10) + "..." + Math.random().toString(16).slice(2, 6)
+
+      // Save to localStorage
+      localStorage.setItem("walletAddress", mockAddress)
+
+      // Create or update user in database
+      await createOrUpdateUser({
+        walletAddress: mockAddress,
+        name: `User_${mockAddress.slice(2, 6)}`,
+        fundBalance: 1000, // Give new users some initial funds
+        solBalance: 10, // Give new users some initial SOL
+      })
+
       setWalletAddress(mockAddress)
       setIsConnected(true)
       setIsDialogOpen(false)
-      if (onConnect) onConnect()
-    }, 1000)
+
+      if (onConnect) onConnect(mockAddress)
+    } catch (error) {
+      console.error("Error connecting wallet:", error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleDisconnect = () => {
+    localStorage.removeItem("walletAddress")
     setIsConnected(false)
     setWalletAddress("")
   }
@@ -72,11 +104,13 @@ export function ConnectWallet({ className, onConnect }: ConnectWalletProps) {
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <Button
-            onClick={handleConnect}
+            onClick={() => handleConnect("metamask")}
+            disabled={isLoading}
             className="web3-card hover:bg-muted/50 transition-colors flex items-center justify-between"
           >
             <span>MetaMask</span>
             <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              {/* MetaMask SVG */}
               <path
                 d="M27.2684 4.03027L17.5018 11.2841L19.3079 7.00442L27.2684 4.03027Z"
                 fill="#E17726"
@@ -256,11 +290,13 @@ export function ConnectWallet({ className, onConnect }: ConnectWalletProps) {
             </svg>
           </Button>
           <Button
-            onClick={handleConnect}
+            onClick={() => handleConnect("walletconnect")}
+            disabled={isLoading}
             className="web3-card hover:bg-muted/50 transition-colors flex items-center justify-between"
           >
             <span>WalletConnect</span>
             <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              {/* WalletConnect SVG */}
               <path
                 d="M9.58818 12.0055C13.1755 8.40234 19.0245 8.40234 22.6118 12.0055L23.0709 12.4664C23.2618 12.6582 23.2618 12.9673 23.0709 13.1591L21.6827 14.5527C21.5873 14.6486 21.4336 14.6486 21.3382 14.5527L20.7055 13.9173C18.2064 11.4091 14.0064 11.4091 11.5073 13.9173L10.8309 14.5964C10.7355 14.6923 10.5818 14.6923 10.4864 14.5964L9.09818 13.2027C8.90727 13.0109 8.90727 12.7018 9.09818 12.51L9.58818 12.0055ZM25.8373 15.24L27.0518 16.46C27.2427 16.6518 27.2427 16.9609 27.0518 17.1527L20.9609 23.2727C20.77 23.4645 20.4627 23.4645 20.2718 23.2727L16.0718 19.0545C16.0245 19.0073 15.9509 19.0073 15.9036 19.0545L11.7036 23.2727C11.5127 23.4645 11.2055 23.4645 11.0145 23.2727L4.92364 17.1527C4.73273 16.9609 4.73273 16.6518 4.92364 16.46L6.13818 15.24C6.32909 15.0482 6.63636 15.0482 6.82727 15.24L11.0273 19.4582C11.0745 19.5055 11.1482 19.5055 11.1955 19.4582L15.3955 15.24C15.5864 15.0482 15.8936 15.0482 16.0845 15.24L20.2845 19.4582C20.3318 19.5055 20.4055 19.5055 20.4527 19.4582L24.6527 15.24C24.8436 15.0482 25.1509 15.0482 25.3418 15.24H25.8373Z"
                 fill="#3B99FC"
@@ -268,11 +304,13 @@ export function ConnectWallet({ className, onConnect }: ConnectWalletProps) {
             </svg>
           </Button>
           <Button
-            onClick={handleConnect}
+            onClick={() => handleConnect("coinbase")}
+            disabled={isLoading}
             className="web3-card hover:bg-muted/50 transition-colors flex items-center justify-between"
           >
             <span>Coinbase Wallet</span>
             <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              {/* Coinbase Wallet SVG */}
               <path
                 d="M16 4C9.37258 4 4 9.37258 4 16C4 22.6274 9.37258 28 16 28C22.6274 28 28 22.6274 28 16C28 9.37258 22.6274 4 16 4Z"
                 fill="#0052FF"
@@ -289,6 +327,5 @@ export function ConnectWallet({ className, onConnect }: ConnectWalletProps) {
   )
 }
 
-// Make sure we're exporting the component as default as well
 export default ConnectWallet
 

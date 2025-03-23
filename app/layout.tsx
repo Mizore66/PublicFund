@@ -18,7 +18,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" style={{ colorScheme: "dark" }}>
       <body className={`${inter.className} min-h-screen bg-background web3-grid-bg`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
           {children}

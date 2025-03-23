@@ -2,59 +2,10 @@ import { Input } from "@/components/ui/input"
 import { ProjectCard } from "@/components/project-card"
 import { SiteLayout } from "@/components/site-layout"
 import { Search } from "lucide-react"
+import { getProjects } from "@/actions/project-actions"
 
-export default function ProjectsPage() {
-  // Mock data for projects
-  const projects = [
-    {
-      id: "1",
-      title: "Clean Water Initiative",
-      description: "Providing clean water solutions to underserved communities.",
-      raised: 1250,
-      donors: 42,
-      image: "/placeholder.svg?height=200&width=400",
-    },
-    {
-      id: "2",
-      title: "Education for All",
-      description: "Building schools and providing educational resources in rural areas.",
-      raised: 3400,
-      donors: 78,
-      image: "/placeholder.svg?height=200&width=400",
-    },
-    {
-      id: "3",
-      title: "Renewable Energy Project",
-      description: "Developing sustainable energy solutions for communities in need.",
-      raised: 2100,
-      donors: 35,
-      image: "/placeholder.svg?height=200&width=400",
-    },
-    {
-      id: "4",
-      title: "Healthcare Access",
-      description: "Improving healthcare access in remote and underserved regions.",
-      raised: 1800,
-      donors: 29,
-      image: "/placeholder.svg?height=200&width=400",
-    },
-    {
-      id: "5",
-      title: "Food Security Program",
-      description: "Addressing hunger and food insecurity in vulnerable communities.",
-      raised: 950,
-      donors: 18,
-      image: "/placeholder.svg?height=200&width=400",
-    },
-    {
-      id: "6",
-      title: "Digital Literacy",
-      description: "Teaching digital skills to bridge the technology gap.",
-      raised: 1500,
-      donors: 25,
-      image: "/placeholder.svg?height=200&width=400",
-    },
-  ]
+export default async function ProjectsPage() {
+  const projects = await getProjects()
 
   return (
     <SiteLayout>
@@ -81,8 +32,8 @@ export default function ProjectsPage() {
           <div className="mx-auto mt-8 grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {projects.map((project) => (
               <ProjectCard
-                key={project.id}
-                id={project.id}
+                key={project._id}
+                id={project._id}
                 title={project.title}
                 description={project.description}
                 raised={project.raised}

@@ -13,25 +13,36 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { CheckCircle2 } from "lucide-react"
+import { donateToProject } from "@/actions/project-actions"
+import { addDonation } from "@/actions/user-actions"
 
 interface DonateModalProps {
   open: boolean
   onClose: () => void
   projectId: string
   projectTitle: string
+  walletAddress?: string
 }
 
-export function DonateModal({ open, onClose, projectId, projectTitle }: DonateModalProps) {
+export function DonateModal({ open, onClose, projectId, projectTitle, walletAddress }: DonateModalProps) {
   const [amount, setAmount] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
 
-  const handleDonate = () => {
-    // In a real app, this would interact with a smart contract
+  const handleDonate = async () => {
+    if (!amount || Number(amount) <= 0) return
+
     setIsProcessing(true)
 
-    // Simulate processing
-    setTimeout(() => {
+    try {
+      // Call server action to donate to project
+      const donationResult = await donateToProject(projectId, Number(amount), walletAddress || "")
+
+      // If user is connected, add donation to their history
+      if (walletAddress && donationResult.success) {
+        await addDonation(walletAddress, projectId, Number(amount), donationResult.txHash)
+      }
+
       setIsProcessing(false)
       setIsSuccess(true)
 
@@ -41,7 +52,10 @@ export function DonateModal({ open, onClose, projectId, projectTitle }: DonateMo
         setAmount("")
         onClose()
       }, 2000)
-    }, 1500)
+    } catch (error) {
+      console.error("Error donating:", error)
+      setIsProcessing(false)
+    }
   }
 
   const presetAmounts = [5, 10, 25, 50, 100]
@@ -155,4 +169,6 @@ export function DonateModal({ open, onClose, projectId, projectTitle }: DonateMo
     </Dialog>
   )
 }
+
+// Let's update the ConnectWallet component to use our user actions:
 

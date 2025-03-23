@@ -1,50 +1,13 @@
-"use client"
-
-import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { DonateModal } from "@/components/donate-modal"
 import { SiteLayout } from "@/components/site-layout"
+import { getProjectById } from "@/actions/project-actions"
 
-export default function ProjectPage() {
-  const { id } = useParams()
-  const [showDonateModal, setShowDonateModal] = useState(false)
-
-  // Mock data for the project
-  // In a real app, you would fetch this data based on the ID
-  const project = {
-    id: id as string,
-    title: "Clean Water Initiative",
-    description:
-      "Providing clean water solutions to underserved communities around the world. This project focuses on building wells, water purification systems, and educating communities about water conservation and hygiene practices.",
-    longDescription:
-      "Access to clean water is a fundamental human right, yet millions of people around the world lack this basic necessity. The Clean Water Initiative works to address this critical issue by implementing sustainable water solutions in communities facing water scarcity and contamination.\n\nOur approach is comprehensive, focusing not only on infrastructure but also on education and community empowerment. We believe that lasting change comes from within communities, so we work closely with local leaders and residents to ensure that our solutions are appropriate, sustainable, and maintained over time.",
-    raised: 1250,
-    goal: 5000,
-    donors: 42,
-    image: "/placeholder.svg?height=400&width=800",
-    updates: [
-      {
-        id: "1",
-        date: "March 15, 2025",
-        title: "Project Launch",
-        content:
-          "We're excited to announce the launch of our Clean Water Initiative campaign. Thanks to everyone who has supported us so far!",
-      },
-      {
-        id: "2",
-        date: "March 20, 2025",
-        title: "First Milestone Reached",
-        content:
-          "We've reached our first funding milestone! This will allow us to begin preliminary work in our target communities.",
-      },
-    ],
-  }
-
+export default async function ProjectPage({ params }: { params: { id: string } }) {
+  const project = await getProjectById(params.id)
   const progress = (project.raised / project.goal) * 100
 
   return (
@@ -75,7 +38,7 @@ export default function ProjectPage() {
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">{project.donors} donors</span>
                     </div>
-                    <Button className="w-full" size="lg" onClick={() => setShowDonateModal(true)}>
+                    <Button className="w-full" size="lg">
                       Donate Now
                     </Button>
                   </div>
@@ -86,19 +49,19 @@ export default function ProjectPage() {
           <div className="mt-12">
             <h2 className="text-2xl font-bold">About This Project</h2>
             <div className="mt-4 space-y-4">
-              <p className="text-muted-foreground">{project.longDescription}</p>
+              <p className="text-muted-foreground">{project.longDescription || project.description}</p>
             </div>
           </div>
           <div className="mt-12">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold">Project Updates</h2>
               <div className="flex gap-2">
-                <Link href={`/projects/${id}/community`}>
+                <Link href={`/projects/${params.id}/community`}>
                   <Button variant="outline" className="border-primary/20 hover:bg-primary/10">
                     View Community
                   </Button>
                 </Link>
-                <Link href={`/projects/${id}/analytics`}>
+                <Link href={`/projects/${params.id}/analytics`}>
                   <Button variant="outline" className="border-primary/20 hover:bg-primary/10">
                     View Analytics
                   </Button>
@@ -106,27 +69,25 @@ export default function ProjectPage() {
               </div>
             </div>
             <div className="mt-4 space-y-4">
-              {project.updates.map((update) => (
-                <Card key={update.id}>
-                  <CardHeader>
-                    <CardTitle>{update.title}</CardTitle>
-                    <CardDescription>{update.date}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p>{update.content}</p>
-                  </CardContent>
-                </Card>
-              ))}
+              {project.updates &&
+                project.updates.map((update: any, index: number) => (
+                  <Card key={index}>
+                    <CardHeader>
+                      <CardTitle>{update.title}</CardTitle>
+                      <CardDescription>{new Date(update.date).toLocaleDateString()}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <p>{update.content}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              {(!project.updates || project.updates.length === 0) && (
+                <p className="text-muted-foreground">No updates yet.</p>
+              )}
             </div>
           </div>
         </div>
       </section>
-      <DonateModal
-        open={showDonateModal}
-        onClose={() => setShowDonateModal(false)}
-        projectId={project.id}
-        projectTitle={project.title}
-      />
     </SiteLayout>
   )
 }

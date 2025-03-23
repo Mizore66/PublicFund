@@ -1,8 +1,8 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -10,20 +10,63 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { Upload, X, ArrowRight } from "lucide-react"
+import { createProject } from "@/actions/project-actions"
 
 export function DonationRequestForm() {
+  const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [images, setImages] = useState<string[]>([])
+  const [formData, setFormData] = useState({
+    title: "",
+    category: "",
+    description: "",
+    goal: "",
+    walletAddress: "",
+    website: "",
+    socials: "",
+  })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { id, value } = e.target
+    setFormData((prev) => ({ ...prev, [id]: value }))
+  }
+
+  const handleSelectChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, category: value }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
 
-    // In a real app, this would submit to an API
-    setTimeout(() => {
+    try {
+      // Create project in database
+      const project = await createProject({
+        title: formData.title,
+        description: formData.description,
+        longDescription: formData.description,
+        goal: Number(formData.goal),
+        raised: 0,
+        donors: 0,
+        image: images.length > 0 ? images[0] : "/placeholder.svg?height=400&width=800",
+        category: formData.category,
+        createdBy: formData.walletAddress,
+        updates: [
+          {
+            title: "Project Created",
+            content: "This project has been created and is now accepting donations.",
+            date: new Date(),
+          },
+        ],
+      })
+
+      // Redirect to the new project page
+      router.push(`/projects/${project._id}`)
+    } catch (error) {
+      console.error("Error creating project:", error)
+    } finally {
       setIsSubmitting(false)
-      // Show success message or redirect
-    }, 2000)
+    }
   }
 
   const handleImageUpload = () => {
@@ -58,6 +101,8 @@ export function DonationRequestForm() {
               id="title"
               placeholder="Enter a clear, descriptive title"
               required
+              value={formData.title}
+              onChange={handleChange}
               className="bg-muted/50 border-primary/20 focus:border-primary/50 focus:ring-primary/50"
             />
           </div>
@@ -66,7 +111,7 @@ export function DonationRequestForm() {
             <Label htmlFor="category" className="text-foreground/80">
               Category
             </Label>
-            <Select>
+            <Select onValueChange={handleSelectChange} value={formData.category}>
               <SelectTrigger className="bg-muted/50 border-primary/20 focus:border-primary/50 focus:ring-primary/50">
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
@@ -90,6 +135,8 @@ export function DonationRequestForm() {
               placeholder="Describe your project, its goals, and how the funds will be used"
               rows={5}
               required
+              value={formData.description}
+              onChange={handleChange}
               className="bg-muted/50 border-primary/20 focus:border-primary/50 focus:ring-primary/50"
             />
           </div>
@@ -104,6 +151,8 @@ export function DonationRequestForm() {
               placeholder="Enter amount"
               min={100}
               required
+              value={formData.goal}
+              onChange={handleChange}
               className="bg-muted/50 border-primary/20 focus:border-primary/50 focus:ring-primary/50"
             />
           </div>
@@ -145,13 +194,14 @@ export function DonationRequestForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="wallet" className="text-foreground/80">
+            <Label htmlFor="walletAddress" className="text-foreground/80">
               Recipient Wallet Address
             </Label>
             <Input
-              id="wallet"
+              id="walletAddress"
               placeholder="Enter your Solana wallet address"
-              required
+              value={formData.walletAddress}
+              onChange={handleChange}
               className="bg-muted/50 border-primary/20 focus:border-primary/50 focus:ring-primary/50 font-mono text-sm"
             />
           </div>
@@ -164,6 +214,8 @@ export function DonationRequestForm() {
               id="website"
               type="url"
               placeholder="https://"
+              value={formData.website}
+              onChange={handleChange}
               className="bg-muted/50 border-primary/20 focus:border-primary/50 focus:ring-primary/50"
             />
           </div>
@@ -175,6 +227,8 @@ export function DonationRequestForm() {
             <Input
               id="socials"
               placeholder="Twitter, Discord, etc."
+              value={formData.socials}
+              onChange={handleChange}
               className="bg-muted/50 border-primary/20 focus:border-primary/50 focus:ring-primary/50"
             />
           </div>
