@@ -4,7 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ConnectWallet } from "@/components/connect-wallet"
+import ConnectWallet from "@/components/connect-wallet"
 import { ProjectTable } from "@/components/project-table"
 import { DonationHistory } from "@/components/donation-history"
 

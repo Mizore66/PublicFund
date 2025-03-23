@@ -3,6 +3,7 @@ import Image from "next/image"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
+import { Users } from "lucide-react"
 
 interface ProjectCardProps {
   id: string
@@ -18,27 +19,33 @@ export function ProjectCard({ id, title, description, raised, donors, image, goa
   const progress = (raised / goal) * 100
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="web3-card web3-glow overflow-hidden transition-all duration-300 hover:translate-y-[-4px]">
       <div className="relative aspect-video">
         <Image src={image || "/placeholder.svg"} alt={title} fill className="object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent"></div>
       </div>
       <CardHeader>
-        <CardTitle className="line-clamp-1">{title}</CardTitle>
+        <CardTitle className="line-clamp-1 bg-web3-gradient bg-clip-text text-transparent">{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="line-clamp-2 text-sm text-muted-foreground">{description}</p>
+        <p className="line-clamp-2 text-sm text-foreground/70">{description}</p>
         <div className="mt-4 space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span>${raised} raised</span>
-            <span>{Math.round(progress)}%</span>
+            <span className="font-medium">${raised} raised</span>
+            <span className="text-web3-highlight">{Math.round(progress)}%</span>
           </div>
-          <Progress value={progress} />
-          <div className="text-xs text-muted-foreground">{donors} donors</div>
+          <Progress value={progress} className="h-2 bg-muted overflow-hidden">
+            <div className="h-full w-full bg-web3-gradient web3-shimmer"></div>
+          </Progress>
+          <div className="flex items-center text-xs text-foreground/60">
+            <Users className="mr-1 h-3 w-3" />
+            {donors} donors
+          </div>
         </div>
       </CardContent>
       <CardFooter>
         <Link href={`/projects/${id}`} className="w-full">
-          <Button className="w-full">View Project</Button>
+          <Button className="w-full web3-button">View Project</Button>
         </Link>
       </CardFooter>
     </Card>

@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ConnectWallet } from "@/components/connect-wallet"
+import ConnectWallet from "@/components/connect-wallet"
 
 export default function AboutPage() {
   return (
