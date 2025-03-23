@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "PublicFund - Web3 Quadratic Funding",
   description: "Support public goods with quadratic funding on the blockchain",
-  generator: 'v0.dev'
+    generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -18,7 +18,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="dark" style={{ colorScheme: "dark" }}>
+    <html lang="en" className="dark">
       <body className={`${inter.className} min-h-screen bg-background web3-grid-bg`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
           {children}
@@ -27,3 +27,7 @@ export default function RootLayout({
     </html>
   )
 }
+
+
+
+import './globals.css'
