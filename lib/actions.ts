@@ -1,8 +1,8 @@
 "use server"
 
 import dbConnect from "@/lib/mongodb"
-import Project from "@/models/project"
-import User from "@/models/user"
+import Project from "@/models/Project"
+import User from "@/models/User"
 import Donation from "@/models/donation"
 import { calculateQuadraticMatch } from "@/lib/quadratic-funding"
 import { revalidatePath } from "next/cache"

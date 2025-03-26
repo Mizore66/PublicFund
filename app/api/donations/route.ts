@@ -1,8 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
 import dbConnect from "@/lib/mongodb"
 import Donation from "@/models/donation"
-import Project from "@/models/project"
-import User from "@/models/user"
+import Project from "@/models/Project"
+import User from "@/models/User"
 import { calculateQuadraticMatch } from "@/lib/quadratic-funding"
 
 export async function GET(req: NextRequest) {

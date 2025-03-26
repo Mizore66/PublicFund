@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import dbConnect from "@/lib/mongodb"
-import User from "@/models/user"
+import User from "@/models/User"
 import Donation from "@/models/donation"
 
 export async function GET(req: NextRequest) {
