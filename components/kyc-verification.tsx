@@ -8,13 +8,13 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/components/ui/use-toast"
-import { useWalletAuth } from "@/context/wallet-auth-context"
 import { CheckCircle2, Upload, Shield, ArrowRight, Camera, FileText } from "lucide-react"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useAuth } from "@/context/auth-context"
 
 export function KycVerification() {
-  const { user, completeKycVerification } = uWalletAuth()
+  const { user, completeKycVerification} = useAuth()
   const { toast } = useToast()
   const [step, setStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)

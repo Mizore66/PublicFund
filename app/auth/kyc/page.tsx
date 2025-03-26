@@ -15,10 +15,12 @@ import { Textarea } from "@/components/ui/textarea"
 import { AlertCircle, Upload, X, CheckCircle, User, Calendar, MapPin, Globe, CreditCard } from "lucide-react"
 import { SiteLayout } from "@/components/site-layout"
 import { useWalletAuth } from "@/components/wallet-auth-provider"
+import { useAuth } from "@/context/auth-context"
 
 export default function KYCPage() {
   const router = useRouter()
-  const { user, isLoading } = useWalletAuth()
+  const { user, isLoading } = useAuth()
+  alert(user)
   const [activeTab, setActiveTab] = useState("personal")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
@@ -55,7 +57,7 @@ export default function KYCPage() {
     }
 
     // Redirect if KYC is already approved
-    if (user?.kycStatus === "approved") {
+    if (user?.kycStatus) {
       router.push("/dashboard")
     }
   }, [user, isLoading, router])

@@ -34,29 +34,16 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Check for authentication token
-  const token = await getToken({
-    req: request,
-    secret: process.env.NEXTAUTH_SECRET,
-  }) as { kycStatus?: string } | null
-
-  // If not authenticated, redirect to login
-  if (!token) {
-    const url = new URL("/auth/login", request.url)
-    url.searchParams.set("callbackUrl", encodeURI(request.url))
-    return NextResponse.redirect(url)
-  }
-
   // Check for KYC requirement
-  const kycRequiredPaths = ["/dashboard/transactions", "/dashboard/projects", "/vote", "/create"]
+  // const kycRequiredPaths = ["/dashboard/transactions", "/dashboard/projects", "/vote", "/create"]
 
-  const requiresKYC = kycRequiredPaths.some((kycPath) => path.startsWith(kycPath))
+  // const requiresKYC = kycRequiredPaths.some((kycPath) => path.startsWith(kycPath))
 
-  if (requiresKYC && token.kycStatus !== "approved") {
-    return NextResponse.redirect(new URL("/auth/kyc", request.url))
-  }
+  // if (requiresKYC) {
+  //   return NextResponse.redirect(new URL("/auth/kyc", request.url))
+  // }
 
-  return NextResponse.next()
+  // return NextResponse.next()
 }
 
 export const config = {

@@ -3,15 +3,15 @@ import { SiteLayout } from "@/components/site-layout"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useWalletAuth } from "@/context/wallet-auth-context"
 import { Shield, CheckCircle2, AlertCircle, Copy, ExternalLink } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { useRouter } from "next/navigation"
 import { Achievements } from "@/components/achievements"
 import { DonationHistory } from "@/components/donation-history"
+import { useAuth } from "@/context/auth-context"
 
 export default function ProfilePage() {
-  const { user, status, disconnectWallet, startKycVerification } = useWalletAuth()
+  const { user, status, disconnectWallet, startKycVerification } = useAuth()
   const { toast } = useToast()
   const router = useRouter()
 

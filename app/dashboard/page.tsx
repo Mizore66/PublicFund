@@ -9,9 +9,10 @@ import { ProjectTable } from "@/components/project-table"
 import { DonationHistory } from "@/components/donation-history"
 import { useWalletAuth } from "@/context/wallet-auth-context"
 import { getUserDonations } from "@/lib/actions"
+import { useAuth } from "@/context/auth-context"
 
 export default function DashboardPage() {
-  const { user, status } = useWalletAuth()
+  const { user, status } = useAuth()
   const [donations, setDonations] = useState([])
   const [isLoading, setIsLoading] = useState(true)
 

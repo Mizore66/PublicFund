@@ -3,9 +3,9 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { DonateModal } from "@/components/donate-modal"
 import { SiteLayout } from "@/components/site-layout"
 import { getProject } from "@/lib/actions"
+import { DonateButton } from "@/components/donate-button"
 
 export default async function ProjectPage({ params }: { params: { id: string } }) {
   const { id } = params
@@ -98,26 +98,5 @@ export default async function ProjectPage({ params }: { params: { id: string } }
     </SiteLayout>
   )
 }
-// Client component for the donate button to avoid useState in server component
-;("use client")
 
-import { useState } from "react"
-
-function DonateButton({ projectId, projectTitle }: { projectId: string; projectTitle: string }) {
-  const [showDonateModal, setShowDonateModal] = useState(false)
-
-  return (
-    <>
-      <Button className="w-full" size="lg" onClick={() => setShowDonateModal(true)}>
-        Donate Now
-      </Button>
-      <DonateModal
-        open={showDonateModal}
-        onClose={() => setShowDonateModal(false)}
-        projectId={projectId}
-        projectTitle={projectTitle}
-      />
-    </>
-  )
-}
 
