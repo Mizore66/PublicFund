@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import dbConnect from "@/lib/mongodb"
-import User from "@/models/user"
+import User from "@/models/User"
 import { uploadToStorage } from "@/lib/storage"
 
 export async function POST(req: NextRequest) {
