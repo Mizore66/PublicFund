@@ -3,7 +3,6 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import dbConnect from "@/lib/mongodb"
 import User from "@/models/User"
-import { uploadToStorage } from "@/lib/storage"
 
 export async function POST(req: NextRequest) {
   try {
@@ -40,18 +39,11 @@ export async function POST(req: NextRequest) {
     const idBackImage = formData.get("idBackImage") as File
     const selfieImage = formData.get("selfieImage") as File
 
-    // Upload files to storage and get URLs
-    const idFrontImageUrl = idFrontImage ? await uploadToStorage(idFrontImage, `kyc/${user._id}/id-front`) : undefined
-    const idBackImageUrl = idBackImage ? await uploadToStorage(idBackImage, `kyc/${user._id}/id-back`) : undefined
-    const selfieImageUrl = selfieImage ? await uploadToStorage(selfieImage, `kyc/${user._id}/selfie`) : undefined
 
     // Update user with KYC data
     user.kycStatus = "pending"
     user.kycData = {
       ...kycData,
-      idFrontImage: idFrontImageUrl,
-      idBackImage: idBackImageUrl,
-      selfieImage: selfieImageUrl,
     }
 
     await user.save()

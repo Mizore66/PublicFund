@@ -7,7 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import ConnectWallet from "@/components/connect-wallet"
 import { ProjectTable } from "@/components/project-table"
 import { DonationHistory } from "@/components/donation-history"
-import { useWalletAuth } from "@/context/wallet-auth-context"
 import { getUserDonations } from "@/lib/actions"
 import { useAuth } from "@/context/auth-context"
 

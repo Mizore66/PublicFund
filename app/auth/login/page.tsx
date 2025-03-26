@@ -8,7 +8,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { SiteLayout } from "@/components/site-layout"
 import { Wallet } from "lucide-react"
 import { useWalletAuth } from "@/components/wallet-auth-provider"
-import { WalletModalProvider, WalletMultiButton } from "@solana/wallet-adapter-react-ui"
 
 export default function LoginPage() {
   const router = useRouter()

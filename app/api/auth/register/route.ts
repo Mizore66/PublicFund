@@ -2,7 +2,6 @@ import { type NextRequest, NextResponse } from "next/server"
 import dbConnect from "@/lib/mongodb"
 import User from "@/models/User"
 import { createToken } from "@/lib/auth"
-import { sendVerificationEmail } from "@/lib/email"
 
 export async function POST(req: NextRequest) {
   try {
@@ -41,9 +40,6 @@ export async function POST(req: NextRequest) {
     })
 
     await user.save()
-
-    // Send verification email
-    await sendVerificationEmail(email, name, verificationToken)
 
     return NextResponse.json({ message: "User registered successfully" }, { status: 201 })
   } catch (error) {

@@ -2,7 +2,6 @@
 import { useRouter } from "next/navigation"
 import { DonationRequestForm } from "@/components/donation-request-form"
 import { SiteLayout } from "@/components/site-layout"
-import { useWalletAuth } from "@/context/wallet-auth-context"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Shield, AlertCircle } from "lucide-react"
