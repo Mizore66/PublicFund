@@ -3,7 +3,8 @@ import Image from "next/image"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
-import { Users } from "lucide-react"
+import { Users, Tag } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 
 interface ProjectCardProps {
   id: string
@@ -12,10 +13,11 @@ interface ProjectCardProps {
   raised: number
   donors: number
   image: string
-  goal?: number
+  category: string
+  goal: number
 }
 
-export function ProjectCard({ id, title, description, raised, donors, image, goal = 5000 }: ProjectCardProps) {
+export function ProjectCard({ id, title, description, raised, donors, image, category, goal }: ProjectCardProps) {
   const progress = (raised / goal) * 100
 
   return (
@@ -23,6 +25,7 @@ export function ProjectCard({ id, title, description, raised, donors, image, goa
       <div className="relative aspect-video">
         <Image src={image || "/placeholder.svg"} alt={title} fill className="object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent"></div>
+        <Badge className="absolute top-2 right-2 bg-primary/80 hover:bg-primary">{category}</Badge>
       </div>
       <CardHeader>
         <CardTitle className="line-clamp-1 bg-web3-gradient bg-clip-text text-transparent">{title}</CardTitle>
@@ -37,9 +40,15 @@ export function ProjectCard({ id, title, description, raised, donors, image, goa
           <Progress value={progress} className="h-2 bg-muted overflow-hidden">
             <div className="h-full w-full bg-web3-gradient web3-shimmer"></div>
           </Progress>
-          <div className="flex items-center text-xs text-foreground/60">
-            <Users className="mr-1 h-3 w-3" />
-            {donors} donors
+          <div className="flex items-center justify-between text-xs text-foreground/60">
+            <div className="flex items-center">
+              <Users className="mr-1 h-3 w-3" />
+              {donors} donors
+            </div>
+            <div className="flex items-center">
+              <Tag className="mr-1 h-3 w-3" />
+              Goal: ${goal}
+            </div>
           </div>
         </div>
       </CardContent>

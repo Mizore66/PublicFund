@@ -4,19 +4,21 @@ export interface IProject extends Document {
   title: string
   description: string
   longDescription?: string
-  raised: number
-  goal: number
-  donors: number
-  image: string
   category: string
-  createdAt: Date
-  updatedAt: Date
+  goal: number
+  raised: number
+  donors: number
+  matchAmount: number
   createdBy: mongoose.Types.ObjectId
+  walletAddress: string
+  image: string
   updates: {
     title: string
     content: string
     date: Date
   }[]
+  createdAt: Date
+  updatedAt: Date
 }
 
 const ProjectSchema: Schema = new Schema(
@@ -24,12 +26,14 @@ const ProjectSchema: Schema = new Schema(
     title: { type: String, required: true },
     description: { type: String, required: true },
     longDescription: { type: String },
-    raised: { type: Number, default: 0 },
-    goal: { type: Number, required: true },
-    donors: { type: Number, default: 0 },
-    image: { type: String, default: "/placeholder.svg?height=400&width=800" },
     category: { type: String, required: true },
-    createdBy: { type: Schema.Types.ObjectId, ref: "User" },
+    goal: { type: Number, required: true },
+    raised: { type: Number, default: 0 },
+    donors: { type: Number, default: 0 },
+    matchAmount: { type: Number, default: 0 },
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    walletAddress: { type: String, required: true },
+    image: { type: String, default: "/placeholder.svg?height=400&width=800" },
     updates: [
       {
         title: { type: String, required: true },

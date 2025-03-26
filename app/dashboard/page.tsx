@@ -1,17 +1,41 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import ConnectWallet from "@/components/connect-wallet"
 import { ProjectTable } from "@/components/project-table"
 import { DonationHistory } from "@/components/donation-history"
+import { useWalletAuth } from "@/context/wallet-auth-context"
+import { getUserDonations } from "@/lib/actions"
 
 export default function DashboardPage() {
-  const [isConnected, setIsConnected] = useState(false)
+  const { user, status } = useWalletAuth()
+  const [donations, setDonations] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  // Mock data for projects and donations
+  // Fetch user donations when wallet is connected
+  useEffect(() => {
+    async function fetchDonations() {
+      if (user?.walletAddress) {
+        try {
+          const userDonations = await getUserDonations(user.walletAddress)
+          setDonations(userDonations)
+        } catch (error) {
+          console.error("Error fetching donations:", error)
+        } finally {
+          setIsLoading(false)
+        }
+      } else {
+        setIsLoading(false)
+      }
+    }
+
+    fetchDonations()
+  }, [user?.walletAddress])
+
+  // Mock data for projects
   const projects = [
     {
       id: "1",
@@ -39,33 +63,6 @@ export default function DashboardPage() {
     },
   ]
 
-  const donations = [
-    {
-      id: "1",
-      projectId: "1",
-      projectTitle: "Clean Water Initiative",
-      amount: 50,
-      date: "2025-03-15",
-      txHash: "0x1234...5678",
-    },
-    {
-      id: "2",
-      projectId: "2",
-      projectTitle: "Education for All",
-      amount: 100,
-      date: "2025-03-10",
-      txHash: "0x8765...4321",
-    },
-    {
-      id: "3",
-      projectId: "3",
-      projectTitle: "Renewable Energy Project",
-      amount: 75,
-      date: "2025-03-05",
-      txHash: "0xabcd...efgh",
-    },
-  ]
-
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur">
@@ -80,7 +77,7 @@ export default function DashboardPage() {
             <Link href="/about" className="text-sm font-medium hover:underline">
               About
             </Link>
-            <ConnectWallet onConnect={() => setIsConnected(true)} />
+            <ConnectWallet onConnect={() => {}} />
           </nav>
         </div>
       </header>
@@ -92,7 +89,7 @@ export default function DashboardPage() {
               <p className="text-muted-foreground">View your donations and track the impact of your contributions.</p>
             </div>
           </div>
-          {isConnected ? (
+          {user ? (
             <div className="mt-8">
               <Tabs defaultValue="overview" className="w-full">
                 <TabsList>
@@ -107,8 +104,10 @@ export default function DashboardPage() {
                         <CardTitle className="text-sm font-medium">Total Donated</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="text-2xl font-bold">$225.00</div>
-                        <p className="text-xs text-muted-foreground">Across 3 projects</p>
+                        <div className="text-2xl font-bold">
+                          ${isLoading ? "..." : donations.reduce((sum, d) => sum + d.amount, 0).toFixed(2)}
+                        </div>
+                        <p className="text-xs text-muted-foreground">Across {donations.length} projects</p>
                       </CardContent>
                     </Card>
                     <Card>
@@ -116,8 +115,10 @@ export default function DashboardPage() {
                         <CardTitle className="text-sm font-medium">Matching Impact</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="text-2xl font-bold">$675.00</div>
-                        <p className="text-xs text-muted-foreground">3x your direct contribution</p>
+                        <div className="text-2xl font-bold">
+                          ${isLoading ? "..." : donations.reduce((sum, d) => sum + (d.matchAmount || 0), 0).toFixed(2)}
+                        </div>
+                        <p className="text-xs text-muted-foreground">Quadratic funding match</p>
                       </CardContent>
                     </Card>
                     <Card>
@@ -125,7 +126,9 @@ export default function DashboardPage() {
                         <CardTitle className="text-sm font-medium">Projects Supported</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="text-2xl font-bold">3</div>
+                        <div className="text-2xl font-bold">
+                          {isLoading ? "..." : new Set(donations.map((d) => d.project)).size}
+                        </div>
                         <p className="text-xs text-muted-foreground">In the current funding round</p>
                       </CardContent>
                     </Card>
@@ -137,7 +140,7 @@ export default function DashboardPage() {
                         <CardDescription>Your most recent contributions</CardDescription>
                       </CardHeader>
                       <CardContent>
-                        <DonationHistory donations={donations.slice(0, 3)} />
+                        <DonationHistory donations={isLoading ? [] : donations.slice(0, 3)} />
                       </CardContent>
                     </Card>
                     <Card className="col-span-1">
@@ -146,17 +149,25 @@ export default function DashboardPage() {
                         <CardDescription>How your donations are amplified</CardDescription>
                       </CardHeader>
                       <CardContent>
-                        <div className="space-y-4">
-                          {donations.map((donation) => (
-                            <div key={donation.id} className="flex items-center justify-between">
-                              <div className="space-y-1">
-                                <p className="text-sm font-medium leading-none">{donation.projectTitle}</p>
-                                <p className="text-sm text-muted-foreground">Your donation: ${donation.amount}</p>
+                        {isLoading ? (
+                          <div className="text-center py-4 text-muted-foreground">Loading...</div>
+                        ) : donations.length > 0 ? (
+                          <div className="space-y-4">
+                            {donations.slice(0, 3).map((donation) => (
+                              <div key={donation.id} className="flex items-center justify-between">
+                                <div className="space-y-1">
+                                  <p className="text-sm font-medium leading-none">{donation.project.title}</p>
+                                  <p className="text-sm text-muted-foreground">Your donation: ${donation.amount}</p>
+                                </div>
+                                <div className="text-sm font-medium">
+                                  Impact: ${(donation.amount + (donation.matchAmount || 0)).toFixed(2)}
+                                </div>
                               </div>
-                              <div className="text-sm font-medium">Impact: ${donation.amount * 3}</div>
-                            </div>
-                          ))}
-                        </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-4 text-muted-foreground">No donations yet</div>
+                        )}
                       </CardContent>
                     </Card>
                   </div>
@@ -168,7 +179,11 @@ export default function DashboardPage() {
                       <CardDescription>A complete record of your contributions</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <DonationHistory donations={donations} />
+                      {isLoading ? (
+                        <div className="text-center py-4 text-muted-foreground">Loading...</div>
+                      ) : (
+                        <DonationHistory donations={donations} />
+                      )}
                     </CardContent>
                   </Card>
                 </TabsContent>
@@ -191,7 +206,7 @@ export default function DashboardPage() {
               <p className="mt-2 text-muted-foreground">
                 Connect your wallet to view your dashboard and donation history.
               </p>
-              <ConnectWallet className="mt-4" onConnect={() => setIsConnected(true)} />
+              <ConnectWallet className="mt-4" onConnect={() => {}} />
             </div>
           )}
         </div>

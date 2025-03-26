@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -9,64 +10,37 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
-import { Upload, X, ArrowRight } from "lucide-react"
-import { createProject } from "@/actions/project-actions"
+import { Upload, X, ArrowRight, CheckCircle2 } from "lucide-react"
+import { useWalletAuth } from "@/context/wallet-auth-context"
+import { createProject } from "@/lib/actions"
+import { useToast } from "@/components/ui/use-toast"
 
 export function DonationRequestForm() {
+  const { user } = useWalletAuth()
+  const { toast } = useToast()
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
   const [images, setImages] = useState<string[]>([])
+
   const [formData, setFormData] = useState({
     title: "",
     category: "",
     description: "",
+    longDescription: "",
     goal: "",
-    walletAddress: "",
+    walletAddress: user?.walletAddress || "",
     website: "",
     socials: "",
   })
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { id, value } = e.target
-    setFormData((prev) => ({ ...prev, [id]: value }))
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSelectChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, category: value }))
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-
-    try {
-      // Create project in database
-      const project = await createProject({
-        title: formData.title,
-        description: formData.description,
-        longDescription: formData.description,
-        goal: Number(formData.goal),
-        raised: 0,
-        donors: 0,
-        image: images.length > 0 ? images[0] : "/placeholder.svg?height=400&width=800",
-        category: formData.category,
-        createdBy: formData.walletAddress,
-        updates: [
-          {
-            title: "Project Created",
-            content: "This project has been created and is now accepting donations.",
-            date: new Date(),
-          },
-        ],
-      })
-
-      // Redirect to the new project page
-      router.push(`/projects/${project._id}`)
-    } catch (error) {
-      console.error("Error creating project:", error)
-    } finally {
-      setIsSubmitting(false)
-    }
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
   const handleImageUpload = () => {
@@ -79,6 +53,82 @@ export function DonationRequestForm() {
     const newImages = [...images]
     newImages.splice(index, 1)
     setImages(newImages)
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    // Validate form
+    if (!formData.title || !formData.category || !formData.description || !formData.goal || !formData.walletAddress) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      // Create project in MongoDB
+      const projectData = {
+        ...formData,
+        goal: Number(formData.goal),
+        image: images.length > 0 ? images[0] : "/placeholder.svg?height=400&width=800",
+        createdBy: user?._id,
+        updates: [
+          {
+            title: "Project Created",
+            content: "This project has been created and is now accepting donations.",
+            date: new Date(),
+          },
+        ],
+      }
+
+      const project = await createProject(projectData)
+
+      setIsSubmitting(false)
+      setIsSuccess(true)
+
+      // Show success message and redirect
+      setTimeout(() => {
+        router.push(`/projects/${project._id}`)
+      }, 2000)
+    } catch (error) {
+      console.error("Error creating project:", error)
+      setIsSubmitting(false)
+
+      toast({
+        title: "Error",
+        description: "Failed to create project. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  if (isSuccess) {
+    return (
+      <Card className="web3-card w-full max-w-md mx-auto">
+        <CardHeader>
+          <CardTitle className="text-xl bg-web3-gradient bg-clip-text text-transparent">
+            Project Created Successfully
+          </CardTitle>
+          <CardDescription className="text-foreground/70">
+            Your project has been created and is now accepting donations
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center justify-center py-8">
+          <div className="rounded-full bg-green-500/20 p-4 mb-4">
+            <CheckCircle2 className="h-12 w-12 text-green-500" />
+          </div>
+          <h3 className="text-xl font-medium mb-2">Success!</h3>
+          <p className="text-center text-foreground/70 mb-6">
+            Your project "{formData.title}" has been created successfully. You will be redirected to your project page.
+          </p>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
@@ -99,10 +149,11 @@ export function DonationRequestForm() {
             </Label>
             <Input
               id="title"
+              name="title"
+              value={formData.title}
+              onChange={handleInputChange}
               placeholder="Enter a clear, descriptive title"
               required
-              value={formData.title}
-              onChange={handleChange}
               className="bg-muted/50 border-primary/20 focus:border-primary/50 focus:ring-primary/50"
             />
           </div>
@@ -111,32 +162,48 @@ export function DonationRequestForm() {
             <Label htmlFor="category" className="text-foreground/80">
               Category
             </Label>
-            <Select onValueChange={handleSelectChange} value={formData.category}>
+            <Select value={formData.category} onValueChange={(value) => handleSelectChange("category", value)}>
               <SelectTrigger className="bg-muted/50 border-primary/20 focus:border-primary/50 focus:ring-primary/50">
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="environment">Environment</SelectItem>
-                <SelectItem value="education">Education</SelectItem>
-                <SelectItem value="healthcare">Healthcare</SelectItem>
-                <SelectItem value="technology">Technology</SelectItem>
-                <SelectItem value="community">Community</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
+                <SelectItem value="Environment">Environment</SelectItem>
+                <SelectItem value="Education">Education</SelectItem>
+                <SelectItem value="Healthcare">Healthcare</SelectItem>
+                <SelectItem value="Technology">Technology</SelectItem>
+                <SelectItem value="Community">Community</SelectItem>
+                <SelectItem value="Other">Other</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="description" className="text-foreground/80">
-              Project Description
+              Short Description
             </Label>
             <Textarea
               id="description"
-              placeholder="Describe your project, its goals, and how the funds will be used"
-              rows={5}
-              required
+              name="description"
               value={formData.description}
-              onChange={handleChange}
+              onChange={handleInputChange}
+              placeholder="A brief summary of your project (1-2 sentences)"
+              rows={2}
+              required
+              className="bg-muted/50 border-primary/20 focus:border-primary/50 focus:ring-primary/50"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="longDescription" className="text-foreground/80">
+              Full Description
+            </Label>
+            <Textarea
+              id="longDescription"
+              name="longDescription"
+              value={formData.longDescription}
+              onChange={handleInputChange}
+              placeholder="Describe your project in detail, its goals, and how the funds will be used"
+              rows={5}
               className="bg-muted/50 border-primary/20 focus:border-primary/50 focus:ring-primary/50"
             />
           </div>
@@ -147,12 +214,13 @@ export function DonationRequestForm() {
             </Label>
             <Input
               id="goal"
+              name="goal"
               type="number"
-              placeholder="Enter amount"
-              min={100}
-              required
               value={formData.goal}
-              onChange={handleChange}
+              onChange={handleInputChange}
+              placeholder="Enter amount"
+              required
+              min={100}
               className="bg-muted/50 border-primary/20 focus:border-primary/50 focus:ring-primary/50"
             />
           </div>
@@ -199,9 +267,11 @@ export function DonationRequestForm() {
             </Label>
             <Input
               id="walletAddress"
-              placeholder="Enter your Solana wallet address"
+              name="walletAddress"
               value={formData.walletAddress}
-              onChange={handleChange}
+              onChange={handleInputChange}
+              placeholder="Enter your Solana wallet address"
+              required
               className="bg-muted/50 border-primary/20 focus:border-primary/50 focus:ring-primary/50 font-mono text-sm"
             />
           </div>
@@ -212,10 +282,11 @@ export function DonationRequestForm() {
             </Label>
             <Input
               id="website"
+              name="website"
+              value={formData.website}
+              onChange={handleInputChange}
               type="url"
               placeholder="https://"
-              value={formData.website}
-              onChange={handleChange}
               className="bg-muted/50 border-primary/20 focus:border-primary/50 focus:ring-primary/50"
             />
           </div>
@@ -226,9 +297,10 @@ export function DonationRequestForm() {
             </Label>
             <Input
               id="socials"
-              placeholder="Twitter, Discord, etc."
+              name="socials"
               value={formData.socials}
-              onChange={handleChange}
+              onChange={handleInputChange}
+              placeholder="Twitter, Discord, etc."
               className="bg-muted/50 border-primary/20 focus:border-primary/50 focus:ring-primary/50"
             />
           </div>

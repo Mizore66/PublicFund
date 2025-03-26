@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import dbConnect from "@/lib/mongodb"
-import User from "@/models/User"
+import User from "@/models/user"
+import Donation from "@/models/donation"
 
 export async function GET(req: NextRequest) {
   try {
@@ -9,22 +10,27 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url)
     const walletAddress = searchParams.get("walletAddress")
 
-    if (walletAddress) {
-      const user = await User.findOne({ walletAddress })
-
-      if (!user) {
-        return NextResponse.json({ error: "User not found" }, { status: 404 })
-      }
-
-      return NextResponse.json(user)
+    if (!walletAddress) {
+      return NextResponse.json({ error: "Wallet address is required" }, { status: 400 })
     }
 
-    const users = await User.find().limit(10)
+    // Find user by wallet address
+    const user = await User.findOne({ walletAddress })
 
-    return NextResponse.json(users)
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 })
+    }
+
+    // Get user's donations
+    const donations = await Donation.find({ donor: user._id }).populate("project", "title").sort({ createdAt: -1 })
+
+    return NextResponse.json({
+      user,
+      donations,
+    })
   } catch (error) {
-    console.error("Error fetching users:", error)
-    return NextResponse.json({ error: "Failed to fetch users" }, { status: 500 })
+    console.error("Error fetching user:", error)
+    return NextResponse.json({ error: "Failed to fetch user" }, { status: 500 })
   }
 }
 
@@ -34,21 +40,26 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json()
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ walletAddress: body.walletAddress })
-
-    if (existingUser) {
-      return NextResponse.json(existingUser)
+    // Validate required fields
+    if (!body.walletAddress) {
+      return NextResponse.json({ error: "Wallet address is required" }, { status: 400 })
     }
 
-    // Create new user
-    const user = new User(body)
-    await user.save()
+    // Check if user already exists
+    let user = await User.findOne({ walletAddress: body.walletAddress })
 
-    return NextResponse.json(user, { status: 201 })
+    if (user) {
+      // Update existing user
+      user = await User.findOneAndUpdate({ walletAddress: body.walletAddress }, body, { new: true })
+    } else {
+      // Create new user
+      user = await User.create(body)
+    }
+
+    return NextResponse.json(user)
   } catch (error) {
-    console.error("Error creating user:", error)
-    return NextResponse.json({ error: "Failed to create user" }, { status: 500 })
+    console.error("Error creating/updating user:", error)
+    return NextResponse.json({ error: "Failed to create/update user" }, { status: 500 })
   }
 }
 

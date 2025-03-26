@@ -4,9 +4,16 @@ import type React from "react"
 
 import { usePathname } from "next/navigation"
 import Link from "next/link"
-import ConnectWallet from "@/components/connect-wallet"
+import { WalletMultiButton, WalletModalProvider } from "@solana/wallet-adapter-react-ui"
 import { MainFooter } from "@/components/main-footer"
+import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react"
+import { UnsafeBurnerWalletAdapter } from "@solana/wallet-adapter-wallets"
+import { useEffect, useMemo } from "react"
+import { clusterApiUrl } from "@solana/web3.js"
+import {WalletAdapterNetwork} from "@solana/wallet-adapter-base"
 
+import '@solana/wallet-adapter-react-ui/styles.css';
+import ConnectWallet from "./connect-wallet"
 interface SiteLayoutProps {
   children: React.ReactNode
 }
@@ -23,6 +30,17 @@ export function SiteLayout({ children }: SiteLayoutProps) {
     { label: "About", href: "/about" },
   ]
 
+  const network = WalletAdapterNetwork.Devnet;
+
+  const endpoint = useMemo(() => clusterApiUrl(network), [network]);
+
+  const wallets = useMemo(
+    () => [
+        new UnsafeBurnerWalletAdapter(),
+    ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [network]
+  );
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-10 border-b border-border/40 bg-background/80 backdrop-blur-lg">

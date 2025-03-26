@@ -3,11 +3,16 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
+import { DonateModal } from "@/components/donate-modal"
 import { SiteLayout } from "@/components/site-layout"
-import { getProjectById } from "@/actions/project-actions"
+import { getProject } from "@/lib/actions"
 
 export default async function ProjectPage({ params }: { params: { id: string } }) {
-  const project = await getProjectById(params.id)
+  const { id } = params
+
+  // Fetch project from MongoDB
+  const project = await getProject(id)
+
   const progress = (project.raised / project.goal) * 100
 
   return (
@@ -38,9 +43,7 @@ export default async function ProjectPage({ params }: { params: { id: string } }
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">{project.donors} donors</span>
                     </div>
-                    <Button className="w-full" size="lg">
-                      Donate Now
-                    </Button>
+                    <DonateButton projectId={id} projectTitle={project.title} />
                   </div>
                 </CardContent>
               </Card>
@@ -56,12 +59,12 @@ export default async function ProjectPage({ params }: { params: { id: string } }
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold">Project Updates</h2>
               <div className="flex gap-2">
-                <Link href={`/projects/${params.id}/community`}>
+                <Link href={`/projects/${id}/community`}>
                   <Button variant="outline" className="border-primary/20 hover:bg-primary/10">
                     View Community
                   </Button>
                 </Link>
-                <Link href={`/projects/${params.id}/analytics`}>
+                <Link href={`/projects/${id}/analytics`}>
                   <Button variant="outline" className="border-primary/20 hover:bg-primary/10">
                     View Analytics
                   </Button>
@@ -69,8 +72,8 @@ export default async function ProjectPage({ params }: { params: { id: string } }
               </div>
             </div>
             <div className="mt-4 space-y-4">
-              {project.updates &&
-                project.updates.map((update: any, index: number) => (
+              {project.updates && project.updates.length > 0 ? (
+                project.updates.map((update, index) => (
                   <Card key={index}>
                     <CardHeader>
                       <CardTitle>{update.title}</CardTitle>
@@ -80,15 +83,41 @@ export default async function ProjectPage({ params }: { params: { id: string } }
                       <p>{update.content}</p>
                     </CardContent>
                   </Card>
-                ))}
-              {(!project.updates || project.updates.length === 0) && (
-                <p className="text-muted-foreground">No updates yet.</p>
+                ))
+              ) : (
+                <Card>
+                  <CardContent className="py-6">
+                    <p className="text-center text-muted-foreground">No updates yet</p>
+                  </CardContent>
+                </Card>
               )}
             </div>
           </div>
         </div>
       </section>
     </SiteLayout>
+  )
+}
+// Client component for the donate button to avoid useState in server component
+;("use client")
+
+import { useState } from "react"
+
+function DonateButton({ projectId, projectTitle }: { projectId: string; projectTitle: string }) {
+  const [showDonateModal, setShowDonateModal] = useState(false)
+
+  return (
+    <>
+      <Button className="w-full" size="lg" onClick={() => setShowDonateModal(true)}>
+        Donate Now
+      </Button>
+      <DonateModal
+        open={showDonateModal}
+        onClose={() => setShowDonateModal(false)}
+        projectId={projectId}
+        projectTitle={projectTitle}
+      />
+    </>
   )
 }
 

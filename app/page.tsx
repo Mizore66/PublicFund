@@ -4,11 +4,8 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { ProjectCard } from "@/components/project-card"
 import { SiteLayout } from "@/components/site-layout"
 import { ChevronRight, Code, Coins, Vote, PlusCircle, Wallet } from "lucide-react"
-import { getProjects } from "@/actions/project-actions"
 
-export default async function Home() {
-  const featuredProjects = await getProjects(undefined, 3)
-
+export default function Home() {
   return (
     <SiteLayout>
       <section className="py-12 md:py-24 lg:py-32 hero-gradient relative overflow-hidden">
@@ -126,24 +123,27 @@ export default async function Home() {
               </p>
             </div>
             <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {featuredProjects.map((project : {
-                _id: string
-                title: string
-                description: string
-                raised: number
-                donors: number
-                image: string
-              }) => (
-                <ProjectCard
-                  key={project._id}
-                  id={project._id}
-                  title={project.title}
-                  description={project.description}
-                  raised={project.raised}
-                  donors={project.donors}
-                  image={project.image}
-                />
-              ))}
+              <ProjectCard
+                title="Clean Water Initiative"
+                description="Providing clean water solutions to underserved communities."
+                raised={1250}
+                donors={42}
+                image="/placeholder.svg?height=200&width=400"
+                id="1" category={""} goal={0}              />
+              <ProjectCard
+                title="Education for All"
+                description="Building schools and providing educational resources in rural areas."
+                raised={3400}
+                donors={78}
+                image="/placeholder.svg?height=200&width=400"
+                id="2" category={""} goal={0}              />
+              <ProjectCard
+                title="Renewable Energy Project"
+                description="Developing sustainable energy solutions for communities in need."
+                raised={2100}
+                donors={35}
+                image="/placeholder.svg?height=200&width=400"
+                id="3" category={""} goal={0}              />
             </div>
             <div className="flex flex-col sm:flex-row gap-4 mt-4">
               <Link href="/projects">

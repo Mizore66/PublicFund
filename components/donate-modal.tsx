@@ -12,36 +12,56 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { CheckCircle2 } from "lucide-react"
-import { donateToProject } from "@/actions/project-actions"
-import { addDonation } from "@/actions/user-actions"
+import { CheckCircle2, AlertCircle } from "lucide-react"
+import { useWalletAuth } from "@/context/wallet-auth-context"
+import { makeDonation } from "@/lib/actions"
+import { useToast } from "@/components/ui/use-toast"
 
 interface DonateModalProps {
   open: boolean
   onClose: () => void
   projectId: string
   projectTitle: string
-  walletAddress?: string
 }
 
-export function DonateModal({ open, onClose, projectId, projectTitle, walletAddress }: DonateModalProps) {
+export function DonateModal({ open, onClose, projectId, projectTitle }: DonateModalProps) {
+  const { user, status } = useWalletAuth()
+  const { toast } = useToast()
   const [amount, setAmount] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleDonate = async () => {
-    if (!amount || Number(amount) <= 0) return
+    // Validate amount
+    if (!amount || Number.parseFloat(amount) <= 0) {
+      setError("Please enter a valid donation amount")
+      return
+    }
 
+    // Check if user is authenticated
+    if (!user) {
+      setError("Please connect your wallet to donate")
+      return
+    }
+
+    // Check if user is KYC verified
+    if (status !== "kyc-verified") {
+      setError("You need to complete KYC verification to donate")
+      return
+    }
+
+    setError(null)
     setIsProcessing(true)
 
     try {
-      // Call server action to donate to project
-      const donationResult = await donateToProject(projectId, Number(amount), walletAddress || "")
-
-      // If user is connected, add donation to their history
-      if (walletAddress && donationResult.success) {
-        await addDonation(walletAddress, projectId, Number(amount), donationResult.txHash)
-      }
+      // In a real app, this would interact with a smart contract
+      // For now, we'll use our server action to record the donation
+      await makeDonation({
+        projectId,
+        amount: Number.parseFloat(amount),
+        walletAddress: user.walletAddress,
+      })
 
       setIsProcessing(false)
       setIsSuccess(true)
@@ -53,8 +73,9 @@ export function DonateModal({ open, onClose, projectId, projectTitle, walletAddr
         onClose()
       }, 2000)
     } catch (error) {
-      console.error("Error donating:", error)
+      console.error("Error making donation:", error)
       setIsProcessing(false)
+      setError("Failed to process donation. Please try again.")
     }
   }
 
@@ -79,6 +100,38 @@ export function DonateModal({ open, onClose, projectId, projectTitle, walletAddr
         {!isSuccess ? (
           <>
             <div className="grid gap-4 py-4">
+              {!user && (
+                <div className="rounded-lg bg-yellow-500/10 p-4 border border-yellow-500/20 mb-2">
+                  <h3 className="text-sm font-medium text-yellow-500 flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-2" />
+                    Wallet Not Connected
+                  </h3>
+                  <p className="text-xs mt-1 text-foreground/70">Please connect your wallet to make a donation.</p>
+                </div>
+              )}
+
+              {user && status !== "kyc-verified" && (
+                <div className="rounded-lg bg-yellow-500/10 p-4 border border-yellow-500/20 mb-2">
+                  <h3 className="text-sm font-medium text-yellow-500 flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-2" />
+                    KYC Verification Required
+                  </h3>
+                  <p className="text-xs mt-1 text-foreground/70">
+                    Please complete KYC verification to make a donation.
+                  </p>
+                </div>
+              )}
+
+              {error && (
+                <div className="rounded-lg bg-red-500/10 p-4 border border-red-500/20 mb-2">
+                  <h3 className="text-sm font-medium text-red-500 flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-2" />
+                    Error
+                  </h3>
+                  <p className="text-xs mt-1 text-foreground/70">{error}</p>
+                </div>
+              )}
+
               <div className="grid grid-cols-5 gap-2">
                 {presetAmounts.map((preset) => (
                   <Button
@@ -121,7 +174,9 @@ export function DonateModal({ open, onClose, projectId, projectTitle, walletAddr
               </Button>
               <Button
                 onClick={handleDonate}
-                disabled={!amount || isProcessing || Number.parseFloat(amount) <= 0}
+                disabled={
+                  !amount || isProcessing || Number.parseFloat(amount) <= 0 || !user || status !== "kyc-verified"
+                }
                 className="web3-button"
               >
                 {isProcessing ? (
@@ -169,6 +224,4 @@ export function DonateModal({ open, onClose, projectId, projectTitle, walletAddr
     </Dialog>
   )
 }
-
-// Let's update the ConnectWallet component to use our user actions:
 

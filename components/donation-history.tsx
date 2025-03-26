@@ -15,6 +15,10 @@ interface DonationHistoryProps {
 }
 
 export function DonationHistory({ donations }: DonationHistoryProps) {
+  if (!donations || donations.length === 0) {
+    return <div className="text-center py-8 text-muted-foreground">No donations yet</div>
+  }
+
   return (
     <Table>
       <TableHeader>
@@ -37,12 +41,12 @@ export function DonationHistory({ donations }: DonationHistoryProps) {
             <TableCell>{new Date(donation.date).toLocaleDateString()}</TableCell>
             <TableCell className="font-mono text-xs">
               <a
-                href={`https://etherscan.io/tx/${donation.txHash}`}
+                href={`https://solscan.io/tx/${donation.txHash}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:underline"
               >
-                {donation.txHash}
+                {donation.txHash.substring(0, 8)}...{donation.txHash.substring(donation.txHash.length - 6)}
               </a>
             </TableCell>
           </TableRow>

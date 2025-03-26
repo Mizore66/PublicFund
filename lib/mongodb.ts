@@ -1,14 +1,9 @@
 import mongoose from "mongoose"
-import path from "path"
-import dotenv from "dotenv"
 
-require('dotenv').config()
-const MONGODB_URI = process.env.MONGODB_URI
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/quadratic-funding"
 
 if (!MONGODB_URI) {
   throw new Error("Please define the MONGODB_URI environment variable")
-} else {
-  console.log("MONGODB_URI:", MONGODB_URI)
 }
 
 /**
@@ -32,7 +27,7 @@ async function dbConnect() {
       bufferCommands: false,
     }
 
-    cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongoose) => {
+    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
       return mongoose
     })
   }
@@ -41,3 +36,4 @@ async function dbConnect() {
 }
 
 export default dbConnect
+

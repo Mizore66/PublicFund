@@ -2,9 +2,10 @@ import { Input } from "@/components/ui/input"
 import { ProjectCard } from "@/components/project-card"
 import { SiteLayout } from "@/components/site-layout"
 import { Search } from "lucide-react"
-import { getProjects } from "@/actions/project-actions"
+import { getProjects } from "@/lib/actions"
 
 export default async function ProjectsPage() {
+  // Fetch projects from MongoDB
   const projects = await getProjects()
 
   return (
@@ -39,6 +40,8 @@ export default async function ProjectsPage() {
                 raised={project.raised}
                 donors={project.donors}
                 image={project.image}
+                category={project.category}
+                goal={project.goal}
               />
             ))}
           </div>
