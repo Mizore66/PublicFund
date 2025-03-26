@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import React from "react"
 import dbConnect from "@/lib/mongodb"
-import User from "@/models/User"
+import User from "@/models/user"
 import { getAuthToken, verifyToken } from "@/lib/auth"
 
 export async function GET(req: NextRequest) {

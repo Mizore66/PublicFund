@@ -1,7 +1,7 @@
 "use server"
 
 import dbConnect from "@/lib/mongodb"
-import User from "@/models/User"
+import User from "@/models/user"
 import { revalidatePath } from "next/cache"
 
 export async function getUserByWalletAddress(walletAddress: string) {

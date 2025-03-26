@@ -1,7 +1,7 @@
 "use server"
 
 import dbConnect from "@/lib/mongodb"
-import Project from "@/models/Project"
+import Project from "@/models/project"
 import { revalidatePath } from "next/cache"
 
 export async function getProjects(category?: string, limit = 10) {

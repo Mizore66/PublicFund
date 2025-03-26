@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import dbConnect from "@/lib/mongodb"
-import Project from "@/models/Project"
+import Project from "@/models/project"
 import mongoose from "mongoose"
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {

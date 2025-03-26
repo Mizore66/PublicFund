@@ -1,7 +1,7 @@
 import mongoose from "mongoose"
 import dbConnect from "../lib/mongodb"
-import Project from "../models/Project"
-import User from "../models/User"
+import Project from "../models/project"
+import User from "../models/user"
 
 async function seedDatabase() {
   try {
