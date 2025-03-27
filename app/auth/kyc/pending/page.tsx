@@ -11,7 +11,7 @@ import { Clock, AlertCircle } from "lucide-react"
 
 export default function KYCPendingPage() {
   const router = useRouter()
-  const { data: session, status } = useSession()
+  const { status } = useSession()
 
   useEffect(() => {
     // Redirect if not logged in
@@ -28,7 +28,7 @@ export default function KYCPendingPage() {
     // if (session?.user?.kycStatus === "none") {
     //   router.push("/auth/kyc")
     // }
-  }, [session, status, router])
+  }, [status, router])
 
   // Show loading state while checking session
   if (status === "loading") {
@@ -36,44 +36,6 @@ export default function KYCPendingPage() {
       <SiteLayout>
         <div className="flex min-h-[80vh] items-center justify-center">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-        </div>
-      </SiteLayout>
-    )
-  }
-
-  // Show rejected state
-  if (session?.user) {
-    return (
-      <SiteLayout>
-        <div className="flex min-h-[80vh] items-center justify-center py-12">
-          <Card className="web3-card w-full max-w-md">
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl font-bold bg-web3-gradient bg-clip-text text-transparent">
-                KYC Verification Rejected
-              </CardTitle>
-              <CardDescription>
-                Your KYC verification was not approved. Please review the feedback and try again.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col items-center justify-center space-y-4 pt-6">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive/20">
-                <AlertCircle className="h-8 w-8 text-destructive" />
-              </div>
-              <p className="text-center text-muted-foreground">
-                We couldn't verify your identity with the provided information. Please submit new documents.
-              </p>
-            </CardContent>
-            <CardFooter className="flex flex-col space-y-4">
-              <Button className="w-full web3-button" onClick={() => router.push("/auth/kyc")}>
-                Try Again
-              </Button>
-              <div className="text-center text-sm">
-                <Link href="/support" className="text-primary hover:underline">
-                  Contact Support
-                </Link>
-              </div>
-            </CardFooter>
-          </Card>
         </div>
       </SiteLayout>
     )
