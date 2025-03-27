@@ -100,9 +100,7 @@ export function WalletAuthProvider({ children }: WalletAuthProviderProps) {
       const encodedMessage = new TextEncoder().encode(message)
       let signedMessage;
       try {
-        alert('2 BIG BOOMS')
         signedMessage = await window.solana.signMessage(encodedMessage, "utf8")
-        alert('3 BIG BOOMS')
       } catch (error) {
         throw new Error("Failed to sign the message. Ensure your wallet supports message signing.")
       }

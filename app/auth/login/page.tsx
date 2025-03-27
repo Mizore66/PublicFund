@@ -22,10 +22,7 @@ export default function LoginPage() {
 
   const handleConnect = async () => {
     try {
-      alert("1 BIG BOOM")
-      await connectWallet()
-      alert("5 BIG BOOMS")
-      
+      await connectWallet()    
     } catch (error) {
       console.error("Error connecting wallet:", error)
     }

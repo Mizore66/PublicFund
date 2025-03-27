@@ -20,7 +20,6 @@ import { useAuth } from "@/context/auth-context"
 export default function KYCPage() {
   const router = useRouter()
   const { user, isLoading } = useAuth()
-  alert(user)
   const [activeTab, setActiveTab] = useState("personal")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
