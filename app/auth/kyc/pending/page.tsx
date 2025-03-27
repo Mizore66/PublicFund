@@ -19,15 +19,15 @@ export default function KYCPendingPage() {
       router.push("/auth/login")
     }
 
-    // Redirect if KYC is approved
-    if (session?.user?.kycStatus === "approved") {
-      router.push("/dashboard")
-    }
+    // // Redirect if KYC is approved
+    // if (session?.user?.kycStatus === "approved") {
+    //   router.push("/dashboard")
+    // }
 
-    // Redirect if KYC is not submitted
-    if (session?.user?.kycStatus === "none") {
-      router.push("/auth/kyc")
-    }
+    // // Redirect if KYC is not submitted
+    // if (session?.user?.kycStatus === "none") {
+    //   router.push("/auth/kyc")
+    // }
   }, [session, status, router])
 
   // Show loading state while checking session
@@ -42,7 +42,7 @@ export default function KYCPendingPage() {
   }
 
   // Show rejected state
-  if (session?.user?.kycStatus === "rejected") {
+  if (session?.user) {
     return (
       <SiteLayout>
         <div className="flex min-h-[80vh] items-center justify-center py-12">
