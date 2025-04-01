@@ -7,7 +7,7 @@ import Link from "next/link"
 import { WalletMultiButton, WalletModalProvider } from "@solana/wallet-adapter-react-ui"
 import { MainFooter } from "@/components/main-footer"
 import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react"
-import { UnsafeBurnerWalletAdapter } from "@solana/wallet-adapter-wallets"
+import { PhantomWalletAdapter, UnsafeBurnerWalletAdapter } from "@solana/wallet-adapter-wallets"
 import { useEffect, useMemo } from "react"
 import { clusterApiUrl } from "@solana/web3.js"
 import {WalletAdapterNetwork} from "@solana/wallet-adapter-base"
@@ -20,7 +20,7 @@ interface SiteLayoutProps {
 
 export function SiteLayout({ children }: SiteLayoutProps) {
   const pathname = usePathname()
-
+  
   const navItems = [
     { label: "Projects", href: "/projects" },
     { label: "Stake", href: "/stake" },
@@ -30,11 +30,19 @@ export function SiteLayout({ children }: SiteLayoutProps) {
     { label: "About", href: "/about" },
     { label: "Login", href: "/register" },
   ]
-
+  
   const network = WalletAdapterNetwork.Devnet;
-
+  
   const endpoint = useMemo(() => clusterApiUrl(network), [network]);
-
+  
+  const wallets = useMemo(
+    () => [
+      // manually add any legacy wallet adapters here
+      // new UnsafeBurnerWalletAdapter(),
+      new PhantomWalletAdapter()
+    ],
+    [network],
+  );
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-10 border-b border-border/40 bg-background/80 backdrop-blur-lg">
@@ -54,7 +62,13 @@ export function SiteLayout({ children }: SiteLayoutProps) {
                 {item.label}
               </Link>
             ))}
-            <ConnectWallet />
+            <ConnectionProvider endpoint={clusterApiUrl("devnet")}>
+              <WalletProvider wallets={wallets} autoConnect>
+                <WalletModalProvider>
+                  <ConnectWallet />
+                </WalletModalProvider>
+              </WalletProvider>
+            </ConnectionProvider>
           </nav>
         </div>
       </header>

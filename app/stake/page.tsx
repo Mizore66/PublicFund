@@ -1,8 +1,46 @@
+"use client"
+
 import { StakingInterface } from "@/components/staking-interface"
 import { TokenBalance } from "@/components/token-balance"
 import { SiteLayout } from "@/components/site-layout"
+import { useAuth, useWalletAuth } from "@/context/auth-context"
+import { useEffect, useMemo, useState } from "react"
+import { clusterApiUrl, Connection, PublicKey } from "@solana/web3.js"
+import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react"
+import { WalletModalProvider } from "@solana/wallet-adapter-react-ui"
+
+import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 
 export default function StakePage() {
+  const network = WalletAdapterNetwork.Devnet;
+  const endpoint = useMemo(() => clusterApiUrl(network), [network]);
+  const wallets = useMemo(
+    () => [
+      // manually add any legacy wallet adapters here
+      // new UnsafeBurnerWalletAdapter(),
+    ],
+    [network],
+  );
+  const { user, status, connectWallet, disconnectWallet, isLoading } = useWalletAuth()
+  // const [walletBalance, setWalletBalance] = useState<number | null>(null)
+
+  // useEffect(() => {
+  //   const fetchWalletBalance = async () => {
+  //     if (user?.walletAddress) {
+  //       try {
+  //           const connection = new Connection("https://api.devnet.solana.com") // Use the Solana devnet
+  //         const publicKey = new PublicKey(user.walletAddress)
+  //         const balance = await connection.getBalance(publicKey)
+  //         setWalletBalance(balance / 1e9) // Convert lamports to SOL
+  //       } catch (error) {
+  //         console.error("Error fetching wallet balance:", error)
+  //         setWalletBalance(null)
+  //       }
+  //     }
+  //   }
+
+  //   fetchWalletBalance()
+  // }, [user?.walletAddress])
   return (
     <SiteLayout>
       <section className="py-12 md:py-24 hero-gradient relative overflow-hidden">
@@ -22,10 +60,16 @@ export default function StakePage() {
       </section>
       <section className="py-12">
         <div className="container px-4 md:px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <StakingInterface />
-            <TokenBalance />
-          </div>
+          {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-8"> */}
+          <ConnectionProvider endpoint={clusterApiUrl("devnet")}>
+            <WalletProvider wallets={wallets} autoConnect>
+              <WalletModalProvider>
+                {/* <StakingInterface /> */}
+                {user && <TokenBalance {...user} />}
+              </WalletModalProvider>
+            </WalletProvider>
+          </ConnectionProvider>
+          {/* </div> */}
         </div>
       </section>
     </SiteLayout>

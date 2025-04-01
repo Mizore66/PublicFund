@@ -13,6 +13,7 @@ import {
 import { Wallet, Shield, CheckCircle2, AlertCircle } from "lucide-react"
 import { useAuth } from "@/context/auth-context"
 import { useRouter } from "next/navigation"
+import { useWallet } from "@solana/wallet-adapter-react"
 
 interface ConnectWalletProps {
   className?: string
@@ -20,6 +21,7 @@ interface ConnectWalletProps {
 }
 
 export function ConnectWallet({ className, onConnect }: ConnectWalletProps) {
+  const { connect, disconnect, connected } = useWallet();
   const { user, status, connectWallet, disconnectWallet, isLoading } = useAuth()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const router = useRouter()
@@ -42,15 +44,23 @@ export function ConnectWallet({ className, onConnect }: ConnectWalletProps) {
   }, [])
 
   const handleConnect = async () => {
-    const success = await connectWallet()
-    if (success) {
-      setIsDialogOpen(false)
-      // if (onConnect) onConnect()
+    try {
+      if (!connected) {
+        await connect(); // Trigger wallet connection
+      }
+      const success = await connectWallet();
+      if (success) {
+        setIsDialogOpen(false);
+        if (onConnect) onConnect();
+      }
+    } catch (error) {
+      console.error("Error connecting wallet:", error);
     }
-  }
+  };
 
   const handleDisconnect = () => {
     disconnectWallet()
+    disconnect()
   }
 
   const handleKycRedirect = () => {
