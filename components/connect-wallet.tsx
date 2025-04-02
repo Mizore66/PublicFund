@@ -14,6 +14,8 @@ import { Wallet, Shield, CheckCircle2, AlertCircle } from "lucide-react"
 import { useAuth } from "@/context/auth-context"
 import { useRouter } from "next/navigation"
 import { useWallet } from "@solana/wallet-adapter-react"
+import { WalletName } from "@solana/wallet-adapter-base"
+import { useWalletModal } from "@solana/wallet-adapter-react-ui"
 
 interface ConnectWalletProps {
   className?: string
@@ -21,8 +23,9 @@ interface ConnectWalletProps {
 }
 
 export function ConnectWallet({ className, onConnect }: ConnectWalletProps) {
-  const { connect, disconnect, connected } = useWallet();
-  const { user, status, connectWallet, disconnectWallet, isLoading } = useAuth()
+  const { connect, disconnect, connected, wallet: walletAdapter, select } = useWallet();
+  const [isLoading, setIsLoading] = useState(false);
+  const { user, status, connectWallet, disconnectWallet } = useAuth()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const router = useRouter()
 
@@ -45,7 +48,14 @@ export function ConnectWallet({ className, onConnect }: ConnectWalletProps) {
 
   const handleConnect = async () => {
     try {
+      setIsLoading(true)
       if (!connected) {
+        if (!walletAdapter) {
+          // If wallet adapter is not available, set it to Phantom
+          var walletName = "Phantom"
+          select(walletName as WalletName)
+          return;
+        }
         await connect(); // Trigger wallet connection
       }
       const success = await connectWallet();
@@ -55,6 +65,9 @@ export function ConnectWallet({ className, onConnect }: ConnectWalletProps) {
       }
     } catch (error) {
       console.error("Error connecting wallet:", error);
+    }
+    finally {
+      setIsLoading(false)
     }
   };
 
