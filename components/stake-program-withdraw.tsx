@@ -106,6 +106,8 @@ export default function StakeProgramWithdraw() {
             toast.error("Failed to withdraw: " + (error as Error).message);
         } finally {
             setIsLoading(false);
+            // Refresh the page to show the updated balance
+            window.location.reload();
         }
     };
 

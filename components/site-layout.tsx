@@ -28,7 +28,6 @@ export function SiteLayout({ children }: SiteLayoutProps) {
     { label: "Create", href: "/create" },
     { label: "Achievements", href: "/achievements" },
     { label: "About", href: "/about" },
-    { label: "Login", href: "/register" },
   ]
   
   const network = WalletAdapterNetwork.Devnet;

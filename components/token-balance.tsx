@@ -160,65 +160,6 @@ export function TokenBalance(user : UserProfile | null) {
     estimatedRewards: 8.64,
   }
 
-  // Shortened wallet address for display
-  // Mock data for token balances
-  const tokenData = {
-    fund: {
-      balance: rewardTokenBalance ? rewardTokenBalance : 0,
-      staked: 500,
-      available: 750.75,
-      history: [
-        { date: "2025-03-15", amount: 50, type: "Earned", description: "Staking Rewards" },
-        { date: "2025-03-10", amount: -25, type: "Spent", description: "Donation to Education for All" },
-        { date: "2025-03-05", amount: 100, type: "Earned", description: "Staking Rewards" },
-        { date: "2025-03-01", amount: -50, type: "Spent", description: "Donation to Clean Water Initiative" },
-      ],
-    },
-    sol: {
-      balance: walletBalance ? walletBalance : 0,
-      staked: stakedAmount ? stakedAmount : 0,
-      available: walletBalance ? walletBalance - (stakedAmount ? stakedAmount : 0) : 0,
-      history: [
-        { date: "2025-03-12", amount: -5, type: "Staked", description: "Staked SOL for 90 days" },
-        { date: "2025-03-08", amount: 2, type: "Received", description: "Deposit from Exchange" },
-        { date: "2025-03-03", amount: -3.25, type: "Staked", description: "Staked SOL for 30 days" },
-        { date: "2025-02-25", amount: 15, type: "Received", description: "Initial Deposit" },
-      ],
-    },
-  }
-
-  // "use client"
-
-// import { useState } from "react"
-// import { SiteLayout } from "@/components/site-layout"
-// import { Button } from "@/components/ui/button"
-// import { Card } from "@/components/ui/card"
-// import { Input } from "@/components/ui/input"
-// import { ExternalLink, Check, Plus, Minus, DollarSign, CircleDollarSign, Coins } from "lucide-react"
-// import { useAuth } from "@/context/auth-context"
-
-// export default function StakingDashboardPage() {
-//   const { user } = useAuth()
-//   const [depositAmount, setDepositAmount] = useState("0.1")
-//   const [withdrawAmount, setWithdrawAmount] = useState("0.05")
-
-//   // Mock data for the staking dashboard
-//   const stakingData = {
-//     totalProtocolStaked: 0.9,
-//     solanaBalance: 3.4959,
-//     stakedAmount: 0.5,
-//     rewardTokens: 15.254,
-//     timeElapsed: 17274, // seconds
-//     estimatedRewards: 8.64,
-//   }
-
-//   // Shortened wallet address for display
-//   const shortenedAddress = user?.walletAddress
-//     ? `${user.walletAddress.substring(0, 6)}...${user.walletAddress.substring(user.walletAddress.length - 4)}`
-//     : "EGn97R6FkiA9HGRQ...PC6XcCR"
-
-//   const fullAddress = user?.walletAddress || "EGn97R6FkiA9HGRQzrrpL2w7XWY1icmUvHbtYPC6XcCR"
-
   return (
       <div className="container py-12">
         <div className="max-w-5xl mx-auto space-y-8">

@@ -77,6 +77,8 @@ export default function StakeProgramDeposit() {
             toast.error("Failed to deposit: " + (error as Error).message);
         } finally {
             setIsLoading(false);
+            // Refresh the page to show the updated balance
+            window.location.reload();
         }
     };
 

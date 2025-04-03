@@ -51,10 +51,11 @@ export function ConnectWallet({ className, onConnect }: ConnectWalletProps) {
       setIsLoading(true)
       if (!connected) {
         if (!walletAdapter) {
+          console.log("Wallet adapter not available, selecting Phantom")
           // If wallet adapter is not available, set it to Phantom
           var walletName = "Phantom"
-          select(walletName as WalletName)
-          return;
+          await select(walletName as WalletName)
+          await connect() // Trigger wallet connection
         }
         await connect(); // Trigger wallet connection
       }

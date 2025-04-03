@@ -131,8 +131,10 @@ export default function StakeProgramClaim() {
             });
             console.log("Claim transaction signature:", tx);
             
-            // Refresh user account data
-            await fetchUserAccountData();
+            await fetchUserAccountData().then(() => {
+                // Refresh staked amount;
+                window.location.reload();
+            })
         } catch (error) {
             console.error("Error claiming:", error);
             toast.error("Failed to claim: " + (error as Error).message);
