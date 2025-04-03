@@ -13,6 +13,8 @@ export default async function ProjectPage({ params }: { params: { id: string } }
   // Fetch project from MongoDB
   const project = await getProject(id)
 
+  console.log("Project:", project.walletAddress)
+
   const progress = (project.raised / project.goal) * 100
 
   return (
@@ -43,7 +45,7 @@ export default async function ProjectPage({ params }: { params: { id: string } }
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">{project.donors} donors</span>
                     </div>
-                    <DonateButton projectId={id} projectTitle={project.title} />
+                    <DonateButton projectId={id} projectTitle={project.title} projectOwnerWallet={project.walletAddress} />
                   </div>
                 </CardContent>
               </Card>

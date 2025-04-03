@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -16,21 +16,52 @@ import { CheckCircle2, AlertCircle } from "lucide-react"
 import { useWalletAuth } from "@/context/wallet-auth-context"
 import { makeDonation } from "@/lib/actions"
 import { useToast } from "@/components/ui/use-toast"
+import { ConnectionProvider, useAnchorWallet, useWallet, WalletProvider } from "@solana/wallet-adapter-react"
+import { clusterApiUrl, Connection, Keypair, ParsedAccountData, PublicKey, sendAndConfirmTransaction, Transaction } from "@solana/web3.js"
+import { PhantomWalletAdapter } from "@solana/wallet-adapter-wallets"
+import { WalletAdapterNetwork } from "@solana/wallet-adapter-base"
+import { useAuth } from "@/context/auth-context"
+import { createTransferInstruction, getOrCreateAssociatedTokenAccount } from "@solana/spl-token"
+import bs58 from 'bs58';
+import { send } from "process"
+import { STAKE_REWARD_TOKEN } from "@/anchor/lib/addresses"
+
 
 interface DonateModalProps {
   open: boolean
   onClose: () => void
   projectId: string
   projectTitle: string
+  projectOwnerWallet: string
 }
 
-export function DonateModal({ open, onClose, projectId, projectTitle }: DonateModalProps) {
-  const { user, status } = useWalletAuth()
+if (!process.env.NEXT_PUBLIC_PRIV_KEY) {
+  throw new Error("Environment variable PRIV_KEY is not defined.");
+}
+const b = bs58.decode(process.env.NEXT_PUBLIC_PRIV_KEY); // Replace with your base58 encoded private key
+const j = new Uint8Array(b.buffer, b.byteOffset, b.byteLength / Uint8Array.BYTES_PER_ELEMENT); 
+
+export function DonateModal({ open, onClose, projectId, projectTitle, projectOwnerWallet }: DonateModalProps) {
+  const MINT_ADDRESS = "GX9pa1cSpFXtwdEByqQrHAFv6KcFD56n2X2WvuTpd2ZB"; // Replace with your token mint address
+  const RECIPIENT_ADDRESS = projectOwnerWallet; // Replace with the recipient's wallet address
+  console.log(`Recipient Address: ${RECIPIENT_ADDRESS}`);
+  const FROM_KEYPAIR = Keypair.fromSecretKey(j); // Replace with your keypair
+  const SOLANA_CONNECTION = new Connection("https://api.devnet.solana.com"); // Replace with your RPC URL
+  const {publicKey} = useWallet()
+  const anchorWallet = useAnchorWallet()
+  const { user, status } = useAuth()
   const { toast } = useToast()
   const [amount, setAmount] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [rewardTokenBalance, setRewardTokenBalance] = useState<number>(0)
+
+  useEffect(() => {
+    if (open) {
+      fetchRewardTokenBalance()
+    }
+  }, [open, publicKey])
 
   const handleDonate = async () => {
     // Validate amount
@@ -40,7 +71,7 @@ export function DonateModal({ open, onClose, projectId, projectTitle }: DonateMo
     }
 
     // Check if user is authenticated
-    if (!user) {
+    if (!publicKey) {
       setError("Please connect your wallet to donate")
       return
     }
@@ -55,12 +86,12 @@ export function DonateModal({ open, onClose, projectId, projectTitle }: DonateMo
     setIsProcessing(true)
 
     try {
-      // In a real app, this would interact with a smart contract
+      await sendTokens()
       // For now, we'll use our server action to record the donation
       await makeDonation({
         projectId,
         amount: Number.parseFloat(amount),
-        walletAddress: user.walletAddress,
+        walletAddress: publicKey?.toString() || "",
       })
 
       setIsProcessing(false)
@@ -78,6 +109,88 @@ export function DonateModal({ open, onClose, projectId, projectTitle }: DonateMo
       setError("Failed to process donation. Please try again.")
     }
   }
+
+  const fetchRewardTokenBalance = async () => {
+      if (anchorWallet && publicKey) {
+          try {
+              // Get the associated token account for the reward token
+              const { TOKEN_PROGRAM_ID, getAssociatedTokenAddress } = await import('@solana/spl-token');
+              const userStakeRewardTokenAccount = await getAssociatedTokenAddress(
+                  STAKE_REWARD_TOKEN,
+                  publicKey
+              );
+              
+              try {
+                  const tokenAccountInfo = await SOLANA_CONNECTION.getTokenAccountBalance(userStakeRewardTokenAccount);
+                  setRewardTokenBalance(tokenAccountInfo.value.uiAmount ?? 0);
+              } catch (error) {
+                  console.log("User doesn't have reward tokens yet");
+                  setRewardTokenBalance(0);
+              }
+          } catch (error) {
+              console.error("Error fetching reward token balance:", error);
+              toast.error("Failed to fetch reward token balance");
+          }
+      }
+  }
+
+  async function getNumberDecimals(mintAddress: string):Promise<number> {
+    const info = await SOLANA_CONNECTION.getParsedAccountInfo(new PublicKey(mintAddress));
+    const result = (info.value?.data as ParsedAccountData).parsed.info.decimals as number;
+    return result;
+    }
+
+  async function sendTokens() {
+      const TRANSFER_AMOUNT = Number.parseFloat(amount)
+      console.log(`Sending ${TRANSFER_AMOUNT} ${(MINT_ADDRESS)} from ${(publicKey?.toString())} to ${(RECIPIENT_ADDRESS)}.`)
+      if (publicKey) {
+      {
+        console.log(`Sending ${TRANSFER_AMOUNT} ${(MINT_ADDRESS)} from ${(publicKey.toString())} to ${(RECIPIENT_ADDRESS)}.`)
+        //Step 1
+        console.log(`1 - Getting Source Token Account`);
+        let sourceAccount = await getOrCreateAssociatedTokenAccount(
+            SOLANA_CONNECTION, 
+            FROM_KEYPAIR,
+            new PublicKey(MINT_ADDRESS),
+            FROM_KEYPAIR.publicKey
+        );
+        console.log(`Source Account: ${sourceAccount.address.toString()}`);
+
+        console.log(`2 - Getting Destination Token Account`);
+        let destinationAccount = await getOrCreateAssociatedTokenAccount(
+            SOLANA_CONNECTION, 
+            FROM_KEYPAIR,
+            new PublicKey(MINT_ADDRESS),
+            new PublicKey(RECIPIENT_ADDRESS)
+        );
+        console.log(`    Destination Account: ${destinationAccount.address.toString()}`);
+
+          //Step 3
+        console.log(`3 - Fetching Number of Decimals for Mint: ${MINT_ADDRESS}`);
+        const numberDecimals = await getNumberDecimals(MINT_ADDRESS);
+        console.log(`    Number of Decimals: ${numberDecimals}`);
+
+        console.log(`4 - Creating and Sending Transaction`);
+        const tx = new Transaction();
+        tx.add(createTransferInstruction(
+            sourceAccount.address,
+            destinationAccount.address,
+            FROM_KEYPAIR.publicKey,
+            TRANSFER_AMOUNT * Math.pow(10, numberDecimals)
+        ))
+
+          const latestBlockHash = await SOLANA_CONNECTION.getLatestBlockhash('confirmed');
+          tx.recentBlockhash = await latestBlockHash.blockhash;    
+          const signature = await sendAndConfirmTransaction(SOLANA_CONNECTION,tx,[FROM_KEYPAIR]);
+          console.log(
+              '\x1b[32m', //Green Text
+              `   Transaction Success!🎉`,
+              `\n    https://explorer.solana.com/tx/${signature}?cluster=devnet`
+          );
+      }
+
+  }
+}
 
   const presetAmounts = [5, 10, 25, 50, 100]
 
@@ -100,7 +213,7 @@ export function DonateModal({ open, onClose, projectId, projectTitle }: DonateMo
         {!isSuccess ? (
           <>
             <div className="grid gap-4 py-4">
-              {!user && (
+              {!publicKey && (
                 <div className="rounded-lg bg-yellow-500/10 p-4 border border-yellow-500/20 mb-2">
                   <h3 className="text-sm font-medium text-yellow-500 flex items-center">
                     <AlertCircle className="h-4 w-4 mr-2" />
@@ -110,7 +223,7 @@ export function DonateModal({ open, onClose, projectId, projectTitle }: DonateMo
                 </div>
               )}
 
-              {user && status !== "kyc-verified" && (
+              {status !== "kyc-verified" && (
                 <div className="rounded-lg bg-yellow-500/10 p-4 border border-yellow-500/20 mb-2">
                   <h3 className="text-sm font-medium text-yellow-500 flex items-center">
                     <AlertCircle className="h-4 w-4 mr-2" />
@@ -173,40 +286,40 @@ export function DonateModal({ open, onClose, projectId, projectTitle }: DonateMo
                 Cancel
               </Button>
               <Button
-                onClick={handleDonate}
-                disabled={
-                  !amount || isProcessing || Number.parseFloat(amount) <= 0 || !user || status !== "kyc-verified"
-                }
-                className="web3-button"
-              >
-                {isProcessing ? (
-                  <>
-                    <svg
-                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    Processing...
-                  </>
-                ) : (
-                  "Donate"
-                )}
-              </Button>
+    onClick={handleDonate}
+    disabled={
+      !amount || isProcessing || Number.parseFloat(amount) <= 0 || Number.parseFloat(amount) > rewardTokenBalance ||!publicKey
+    }
+    className="web3-button"
+  >
+    {isProcessing ? (
+      <>
+        <svg
+          className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          ></circle>
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
+        </svg>
+        Processing...
+      </>
+    ) : (
+      "Donate"
+    )}
+  </Button>
             </DialogFooter>
           </>
         ) : (

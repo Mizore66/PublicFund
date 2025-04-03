@@ -12,8 +12,6 @@ import { toast } from "sonner"
 import IDL from "../anchor/lib/idl.json";
 import {Stake} from "../anchor/lib/stake";
 import * as anchor from "@coral-xyz/anchor";
-import { SiteLayout } from "./site-layout"
-import { Input } from "./ui/input"
 import StakeProgramClaim from "./stake-program-claim"
 import StakeProgramWithdraw from "./stake-program-withdraw"
 import StakeProgramDeposit from "./stake-program-deposit"
@@ -151,8 +149,6 @@ export function TokenBalance(user : UserProfile | null) {
           }
       }
   }
-  const [depositAmount, setDepositAmount] = useState("0.1")
-  const [withdrawAmount, setWithdrawAmount] = useState("0.05")
 
   // Mock data for the staking dashboard
   const stakingData = {
