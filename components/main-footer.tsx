@@ -9,18 +9,16 @@ export function MainFooter() {
           rights reserved.
         </p>
         <div className="flex items-center gap-4">
-          <Link
-            href="/terms"
+          <p
             className="text-sm font-medium text-foreground/60 hover:text-foreground transition-colors"
           >
             Terms
-          </Link>
-          <Link
-            href="/privacy"
+          </p>
+          <p
             className="text-sm font-medium text-foreground/60 hover:text-foreground transition-colors"
           >
             Privacy
-          </Link>
+          </p>
         </div>
       </div>
     </footer>
