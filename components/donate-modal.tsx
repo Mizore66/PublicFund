@@ -152,7 +152,7 @@ export function DonateModal({ open, onClose, projectId, projectTitle, projectOwn
             SOLANA_CONNECTION, 
             FROM_KEYPAIR,
             new PublicKey(MINT_ADDRESS),
-            FROM_KEYPAIR.publicKey
+            publicKey
         );
         console.log(`Source Account: ${sourceAccount.address.toString()}`);
 
@@ -175,7 +175,7 @@ export function DonateModal({ open, onClose, projectId, projectTitle, projectOwn
         tx.add(createTransferInstruction(
             sourceAccount.address,
             destinationAccount.address,
-            FROM_KEYPAIR.publicKey,
+            publicKey,
             TRANSFER_AMOUNT * Math.pow(10, numberDecimals)
         ))
 

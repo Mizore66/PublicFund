@@ -1,7 +1,7 @@
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { SiteLayout } from "@/components/site-layout"
-import Link from "next/link"
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SiteLayout } from "@/components/site-layout";
+import Link from "next/link";
 
 export default function AboutPage() {
   return (
@@ -10,7 +10,9 @@ export default function AboutPage() {
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center justify-center space-y-4 text-center">
             <div className="space-y-2">
-              <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">About Quadratic Funding</h1>
+              <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
+                About Quadratic Funding
+              </h1>
               <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
                 A democratic way to fund public goods that amplifies the power of community support.
               </p>
@@ -66,6 +68,32 @@ export default function AboutPage() {
               </div>
             </div>
             <div>
+              <h2 className="text-2xl font-bold">Stake to Donate</h2>
+              <p className="mt-4 text-muted-foreground">
+                PublicFund introduces a unique feature called <strong>Stake to Donate</strong>. Users can stake their
+                SOL tokens to generate $FUND SPL tokens, which serve as the platform's primary donation currency. By
+                staking SOL, users not only earn rewards but also contribute to the ecosystem by funding impactful
+                projects.
+              </p>
+              <p className="mt-4 text-muted-foreground">
+                Once $FUND tokens are earned, users can explore various projects and donate to the ones they care about
+                the most. The quadratic funding formula ensures that projects with broader community support receive
+                more matching funds.
+              </p>
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold">KYC Verification</h2>
+              <p className="mt-4 text-muted-foreground">
+                To ensure compliance and maintain a secure platform, all users must complete <strong>KYC (Know Your
+                Customer)</strong> verification. This process involves verifying your identity by submitting personal
+                information and documents. Once verified, users gain full access to all platform features, including
+                staking, donating, and participating in the quadratic funding ecosystem.
+              </p>
+              <p className="mt-4 text-muted-foreground">
+                Your information is securely stored and encrypted, ensuring privacy and compliance with regulations.
+              </p>
+            </div>
+            <div>
               <h2 className="text-2xl font-bold">The Math Behind It</h2>
               <p className="mt-4 text-muted-foreground">
                 The matching amount M for a project is calculated using the formula:
@@ -99,6 +127,5 @@ export default function AboutPage() {
         </div>
       </section>
     </SiteLayout>
-  )
+  );
 }
-
